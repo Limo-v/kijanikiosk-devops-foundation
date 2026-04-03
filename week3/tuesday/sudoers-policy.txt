@@ -1,0 +1,29 @@
+# Threat analysis for broad systemctl permissions
+#
+# Scenario 1: If a user has `sudo /bin/systemctl *` (or equivalent broad scope),
+# they can stop or mask critical security services (for example SSH), creating
+# persistence and operational denial of access for defenders.
+#
+# Scenario 2: Broad systemctl allows enabling/starting attacker-controlled units.
+# A malicious unit can execute arbitrary commands as root at boot or on-demand,
+# which is direct privilege abuse and persistence.
+#
+# This policy prevents those outcomes by allowing only explicit actions against
+# explicit KijaniKiosk units, plus controlled nginx config edits via sudoedit.
+# No shell, editor binary, or interpreter escalation path is granted.
+
+User_Alias KIJANI_OPS = kibet
+Cmnd_Alias KIJANI_SYSTEMCTL = \
+  /usr/bin/systemctl status kk-api.service, \
+  /usr/bin/systemctl status kk-payments.service, \
+  /usr/bin/systemctl status kk-logs.service, \
+  /usr/bin/systemctl restart kk-api.service, \
+  /usr/bin/systemctl restart kk-payments.service, \
+  /usr/bin/systemctl restart kk-logs.service
+Cmnd_Alias KIJANI_JOURNAL = \
+  /usr/bin/journalctl -u kk-api.service, \
+  /usr/bin/journalctl -u kk-payments.service, \
+  /usr/bin/journalctl -u kk-logs.service
+Cmnd_Alias KIJANI_NGINX_EDIT = sudoedit /etc/nginx/nginx.conf
+
+KIJANI_OPS ALL=(root) NOPASSWD: KIJANI_SYSTEMCTL, KIJANI_JOURNAL, KIJANI_NGINX_EDIT

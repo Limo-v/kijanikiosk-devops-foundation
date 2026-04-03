@@ -1,0 +1,3 @@
+# nologin Decision
+
+I chose `/usr/sbin/nologin` for the `kk-api`, `kk-payments`, and `kk-logs` service accounts instead of `/bin/false`. Both prevent interactive shell access, but `nologin` is clearer operationally because it intentionally communicates that the account exists for service execution only, not for human login. That clarity matters during audits and incident response: when someone checks `/etc/passwd`, the intent is explicit rather than ambiguous. In contrast, `/bin/false` simply exits with failure and gives less context. Using `nologin` improves maintainability and makes policy intent visible while still enforcing the same non-interactive security boundary.

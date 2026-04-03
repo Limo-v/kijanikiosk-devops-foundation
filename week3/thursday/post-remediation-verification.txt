@@ -1,0 +1,19 @@
+# Thursday Post-Remediation Verification
+
+Run these commands on the VM after all three fixes, then replace this file with full output.
+
+vmstat 2 5
+df -h /
+du -sh /opt/kijanikiosk/shared/logs/
+ss -tlnp | grep 3001
+sudo ufw status numbered
+curl -s http://localhost:3001/ | head -3
+journalctl -u kk-payments -p err --since "5 minutes ago"
+
+Expected summary:
+- `wa` significantly reduced and blocked process count normalized
+- reclaimed disk space and reduced log footprint
+- one listener on port 3001 (intended payments service)
+- no deny rule for port 3001
+- successful local payments response
+- no new recent error spikes in journal
