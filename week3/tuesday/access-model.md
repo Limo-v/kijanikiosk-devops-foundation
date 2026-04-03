@@ -1,7 +1,6 @@
 # Tuesday Access Model
 
 This access model enforces least privilege while still allowing service interoperability where required.
-
 | Path | Owner:Group | Mode | Access Intent | Why This Choice |
 |---|---|---|---|---|
 | `/opt/kijanikiosk/api/` | `kk-api:kk-api` | `750` | API service full access, no cross-service read | API code should not be readable or writable by unrelated services |
