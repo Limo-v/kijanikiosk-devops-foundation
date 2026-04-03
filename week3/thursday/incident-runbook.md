@@ -1,10 +1,10 @@
 # Thursday Incident Runbook
 
 ## Incident Summary
-- Service impact: intermittent `502` responses on payments endpoint.
-- Affected layer(s): performance, service process ownership on port `3001`, and firewall policy.
-- Investigation start time: `YYYY-MM-DD HH:MM:SS` (replace with actual).
-- Constraint: treat host as black box, validate with evidence before remediation.
+- Main issue seen: random `502` on payments endpoint.
+- It looked like not one issue, maybe performance + network + firewall together.
+- Start time: `YYYY-MM-DD HH:MM:SS` (I fill this during actual run).
+- Goal was to investigate like black box and not assume too early (I still guessed wrong first).
 
 ## Phase 1: Performance Findings
 
@@ -24,7 +24,7 @@
 - Log directory size: `<fill>`
 
 ### Initial hypothesis (timestamped)
-`[YYYY-MM-DD HH:MM:SS]` High write I/O and elevated wait suggest degraded request handling due to oversized unrotated logs saturating disk.
+`[YYYY-MM-DD HH:MM:SS]` I think logs got too big and disk I/O wait is making app slow.
 
 ## Phase 2: Log Findings
 
@@ -42,7 +42,7 @@
 - Logrotate cadence/retention: `<fill>`
 
 ### Revised hypothesis (timestamped)
-`[YYYY-MM-DD HH:MM:SS]` Incident is multi-causal: disk pressure from log accumulation plus traffic instability on port `3001` likely due to process/network misconfiguration.
+`[YYYY-MM-DD HH:MM:SS]` This is likely multi problem: big logs + wrong process/rule around port `3001`.
 
 ## Phase 3: Network Findings
 
@@ -62,9 +62,9 @@
 - UFW deny rule anomaly: `<fill>`
 
 ## Root Causes
-1. Disk I/O saturation from oversized, unrotated logs under shared log path.
-2. Rogue process bound to `127.0.0.1:3001`, creating conflict with intended payments listener behavior.
-3. Erroneous firewall deny rule for `3001/tcp`, blocking intended health/network path.
+1. Disk I/O pressure from oversized logs not rotating correctly.
+2. Rogue process was listening on `127.0.0.1:3001` and confusing requests.
+3. Bad firewall deny rule on `3001/tcp`.
 
 ## Phase 4: Remediation Steps (Exact Order)
 
@@ -92,7 +92,7 @@ Signal decision used:
 5. Update provisioning script to manage this idempotently.
 
 ## Fix-Order Rationale
-Port conflict is fixed first to stop immediate wrong-responder behavior on critical service port. Firewall is second to restore intended traffic visibility. Log rotation is third to resolve sustained I/O degradation. If firewall is fixed before port conflict, health checks can report a false positive while requests still hit rogue behavior, causing resumed routing to a degraded node.
+I fixed port conflict first because it was quickest direct impact. Then firewall, then logs cleanup. If firewall is fixed first while rogue process still there, health check can look okay but service still returns wrong behavior, so that can mislead monitoring and give fake confidence.
 
 ## Phase 5: Post-Remediation Verification
 
@@ -114,6 +114,6 @@ Port conflict is fixed first to stop immediate wrong-responder behavior on criti
 - No new payment errors in recent journal window.
 
 ## Prevention Updates
-- Provisioning script includes explicit logrotate management (`daily`, `rotate 14`).
-- Firewall phase documents and avoids incident-introducing deny rule.
-- Operational runbook now codifies evidence-first triage order (performance -> logs -> network).
+- Added logrotate defaults (`daily`, `rotate 14`) in provisioning script.
+- Added firewall note so bad deny rule is not added again.
+- Keep incident order as performance -> logs -> network because it worked better for me.

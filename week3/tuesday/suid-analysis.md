@@ -1,10 +1,10 @@
 # SUID Analysis
 
 ## 1) Why the kernel ignores SUID on interpreted scripts
-The kernel ignores SUID on scripts because of a long-standing race condition problem between opening the script and interpreting it. An attacker can exploit timing and path replacement (TOCTOU behavior) so the interpreter executes content different from what permission checks originally validated. To avoid privilege-confusion attacks, modern Linux treats SUID scripts as non-SUID and does not elevate effective UID for them.
+Kernel mostly ignores SUID on script files because scripts are interpreted and there were security issues with timing/race stuff (TOCTOU kind of issue). So Linux plays safe and does not trust SUID on those scripts like it would for normal binaries.
 
 ## 2) Why SUID + world-write is still critical if SUID script behavior is ignored
-Even if the script itself does not gain SUID privilege, a world-writable root-owned deployment artifact is still a privilege-escalation foothold. In this lab, the script is executed by a root-controlled automation path (cron/ops workflow). If an attacker replaces or edits that file, they can inject commands that will execute the next time root runs it. The critical risk is trusted execution context, not just SUID semantics.
+Even if SUID does nothing on the script itself, world-write is still very bad. If root cron/job runs that script later, attacker can edit file first and root will run attacker commands. So the danger is more about trusted execution later, not only the SUID bit alone.
 
 ## 3) What makes this exploitable in practice
-This becomes exploitable when a privileged actor or scheduler executes the writable file without integrity checks. Practical exploit conditions include root cron jobs, CI/CD hooks, unattended maintenance scripts, or operator habits like `sudo /opt/.../deploy.sh`. Once the attacker can modify contents and knows the execution trigger, they gain code execution as root at trigger time.
+In real life this is exploitable when there is some automatic root execution path, like cron or deploy scripts. If attacker can edit file before that trigger, then they can get command execution as root when it runs. That is why fixing permissions was urgent.

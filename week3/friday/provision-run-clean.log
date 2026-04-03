@@ -1,0 +1,10 @@
+# provision-run-clean.log
+
+Run immediately after dirty run on same VM:
+
+sudo bash week3/friday/kijanikiosk-provision.sh 2>&1 | tee week3/friday/provision-run-clean.log
+
+Expected evidence:
+- Exit code 0
+- No errors
+- Same phase structure as dirty run

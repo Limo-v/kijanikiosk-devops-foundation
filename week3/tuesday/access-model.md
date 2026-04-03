@@ -1,27 +1,28 @@
 # Tuesday Access Model
 
-This access model enforces least privilege while still allowing service interoperability where required.
+I tried to keep this least privilege, but still make services work together where needed. Not perfect, but this was my best attempt.
+
 | Path | Owner:Group | Mode | Access Intent | Why This Choice |
 |---|---|---|---|---|
-| `/opt/kijanikiosk/api/` | `kk-api:kk-api` | `750` | API service full access, no cross-service read | API code should not be readable or writable by unrelated services |
-| `/opt/kijanikiosk/payments/` | `kk-payments:kk-payments` | `750` | Payments service full access, isolated from API/logs | Payments runtime and artifacts should stay private to payments |
-| `/opt/kijanikiosk/logs/` | `kk-logs:kk-logs` | `750` | Log aggregator full access only | Prevents accidental reads of internal log pipeline state |
-| `/opt/kijanikiosk/config/` (dir) | `root:kijanikiosk` | `750` | Controlled traversal for trusted service identities | Root owns secrets; group traversal allows intended readers |
-| `/opt/kijanikiosk/config/*.env` | `root:kijanikiosk` | `640` | Read-only secrets for approved services | Blocks write tampering and world-readable credential leakage |
-| `/opt/kijanikiosk/shared/logs/` | `kk-logs:kk-logs` | `2770` | Shared operational log handoff with SGID inheritance | SGID keeps group-consistent file ownership for collaborative access |
+| `/opt/kijanikiosk/api/` | `kk-api:kk-api` | `750` | API can use own folder | stop other services browsing it |
+| `/opt/kijanikiosk/payments/` | `kk-payments:kk-payments` | `750` | Payments isolated | payment files should not be open to all |
+| `/opt/kijanikiosk/logs/` | `kk-logs:kk-logs` | `750` | logs service owns this | keep log pipeline separate |
+| `/opt/kijanikiosk/config/` (dir) | `root:kijanikiosk` | `750` | allow allowed users to traverse | root still owns secrets |
+| `/opt/kijanikiosk/config/*.env` | `root:kijanikiosk` | `640` | read only for right accounts | avoid everyone reading passwords |
+| `/opt/kijanikiosk/shared/logs/` | `kk-logs:kk-logs` | `2770` | shared logs place | SGID helps group inheritance |
 
 ## ACL Decisions
 
 ### `/opt/kijanikiosk/shared/logs/`
-- `u:kk-api:rwx`: API must write application logs.
-- `u:kk-payments:rx`: Payments must read shared logs for correlation/audit.
-- `u:kibet:rx`: Operator account can inspect logs without root shell.
-- Default ACLs should mirror these entries to preserve access after new file creation.
+- `u:kk-api:rwx` so api can write logs
+- `u:kk-payments:rx` so payments can read for checks
+- `u:kibet:rx` so I can inspect without sudo all the time
+- default ACL same idea so new files are not broken later
 
 ### `/opt/kijanikiosk/config/`
-- `u:kibet:rx` on directory and `u:kibet:r--` for files.
-- Rationale: operations/user troubleshooting can read configuration values when needed, but cannot alter them.
+- `u:kibet:rx` on dir and `u:kibet:r--` on files
+- this is for troubleshooting mostly, but no writing
 
 ## Why ACLs Instead of Modes Alone
 
-Traditional UNIX mode bits only give one owner and one group path for access decisions. We have multiple distinct principals that need different rights on the same path (`kk-api` write, `kk-payments` read, operator read), so ACLs are used to express that matrix without over-broad group write access.
+Normal chmod bits were not enough for me because we needed mixed access on same folder (one user write, another read, plus operator read). ACL felt easier for that part even if it took me some retries and mistakes first.

@@ -1,6 +1,6 @@
 # Thursday Post-Remediation Verification
 
-Run these commands on the VM after all three fixes, then replace this file with full output.
+I should run these after all 3 fixes, then paste the real terminal output here (still pending from VM side).
 
 vmstat 2 5
 df -h /
@@ -10,10 +10,10 @@ sudo ufw status numbered
 curl -s http://localhost:3001/ | head -3
 journalctl -u kk-payments -p err --since "5 minutes ago"
 
-Expected summary:
-- `wa` significantly reduced and blocked process count normalized
-- reclaimed disk space and reduced log footprint
-- one listener on port 3001 (intended payments service)
-- no deny rule for port 3001
-- successful local payments response
-- no new recent error spikes in journal
+What I expect to see:
+- `wa` lower than before and blocked processes better
+- some disk space recovered after rotation
+- only one listener on 3001
+- deny 3001 rule removed
+- localhost payments response looks normal-ish
+- fewer or no fresh errors in journal window

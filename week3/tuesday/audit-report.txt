@@ -1,6 +1,6 @@
 # Tuesday Audit Report
 
-This repository run was completed in `deliverables-only` mode, so this file is prepared with the exact audit script and command sequence to run on your target VM.
+I prepared this in repo mode first, so I still need to run this on VM and paste real output after.
 
 ## Run command
 
@@ -36,4 +36,4 @@ sudo -u kk-api cat /opt/kijanikiosk/config/db.env && echo "PASS: kk-api can read
 
 ## Evidence placeholder
 
-Replace this section with the full captured command output from your VM run.
+I will replace this part with actual output from VM run. For now this is my checklist so I do not miss steps.

@@ -2,7 +2,7 @@
 
 ## Baseline and Improved Score
 
-This deliverable is prepared in repository-only mode. Run these on the VM and paste real output:
+I could not put real VM numbers in this file yet, so these are the commands I planned to run and then fill output.
 
 1. Baseline:
 
@@ -17,16 +17,17 @@ Final score target: below `3.0`.
 ## Two Additional Hardening Directives Added
 
 ### 1) `MemoryDenyWriteExecute=true`
-- Kernel-level effect: enforces W^X behavior on anonymous memory mappings by denying pages that are writable and executable at the same time.
-- Attack class blocked: JIT spray / runtime shellcode staging where attacker-controlled bytes are written then executed from the same region.
+- What I understood: it tries to stop memory being write + execute together.
+- Why useful: makes code injection style attacks harder (like writing payload then running it).
 
 ### 2) `SystemCallFilter=@system-service`
-- Kernel-level effect: limits the syscall surface by applying seccomp filters, so disallowed kernel entry points return an error instead of executing.
-- Attack class blocked: syscall-based post-exploitation chains that rely on broad kernel interfaces (for example arbitrary namespace/mount/process-control operations from a compromised service process).
+- What I understood: this limits syscalls available to the service using seccomp list.
+- Why useful: if process is compromised, attacker has less kernel actions available.
 
 ## Optional Additional Directives You Can Validate
 
 - `RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6`
 - `LockPersonality=true`
 
-These further reduce attack surface and usually lower the score without breaking standard Node-based services.
+These further reduce attack surface and usually lower score without breaking normal Node services.
+I still need to confirm final score from real run, but this was the direction I used after some trial and error.
