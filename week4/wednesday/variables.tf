@@ -1,13 +1,19 @@
+variable "aws_profile" {
+  description = "AWS CLI profile name used by Terraform for authentication"
+  type        = string
+  default     = "default"
+}
+
 variable "region" {
   description = "AWS region for the KijaniKiosk Wednesday lab deployment"
   type        = string
-  default     = "af-south-1"
+  default     = "us-east-1"
 }
 
 variable "availability_zone" {
   description = "Availability zone for the shared public subnet"
   type        = string
-  default     = "af-south-1a"
+  default     = "us-east-1a"
 }
 
 variable "instance_type" {

@@ -1,5 +1,6 @@
-region             = "af-south-1"
-availability_zone  = "af-south-1a"
+aws_profile        = "default"
+region             = "us-east-1"
+availability_zone  = "us-east-1a"
 instance_type      = "t2.micro"
 logs_instance_type = "t2.micro"
 ssh_key_name       = "kijani-admin-key"
