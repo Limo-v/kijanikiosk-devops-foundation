@@ -55,6 +55,36 @@ variable "public_subnet_cidr" {
   default     = "10.0.1.0/24"
 }
 
+variable "availability_zone" {
+  description = "Availability zone for the public subnet and API server"
+  type        = string
+  default     = "af-south-1a"
+}
+
+variable "assign_public_ip" {
+  description = "Whether the instance and subnet should assign a public IP"
+  type        = bool
+  default     = true
+}
+
+variable "http_ingress_cidr" {
+  description = "CIDR allowed to reach the HTTP port"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "root_volume_size" {
+  description = "Root EBS volume size in GB"
+  type        = number
+  default     = 8
+}
+
+variable "root_volume_type" {
+  description = "Root EBS volume type for the instance"
+  type        = string
+  default     = "gp3"
+}
+
 variable "private_key_path" {
   description = "Local private key path used when connecting to the instance"
   type        = string

@@ -53,8 +53,8 @@ resource "aws_internet_gateway" "kk_igw" {
 resource "aws_subnet" "kk_public_subnet" {
   vpc_id                  = aws_vpc.kk_vpc.id
   cidr_block              = var.public_subnet_cidr
-  availability_zone       = "${var.region}a"
-  map_public_ip_on_launch = true
+  availability_zone       = var.availability_zone
+  map_public_ip_on_launch = var.assign_public_ip
 
   tags = {
     Name        = "${var.name_tag}-public-subnet"
@@ -97,11 +97,11 @@ resource "aws_security_group" "kk_api_sg" {
   }
 
   ingress {
-    description = "HTTP from anywhere"
+    description = "HTTP from approved CIDR"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.http_ingress_cidr]
   }
 
   egress {
@@ -125,11 +125,11 @@ resource "aws_instance" "kk_api" {
   key_name                    = var.ssh_key_name
   subnet_id                   = aws_subnet.kk_public_subnet.id
   vpc_security_group_ids      = [aws_security_group.kk_api_sg.id]
-  associate_public_ip_address = true
+  associate_public_ip_address = var.assign_public_ip
 
   root_block_device {
-    volume_size = 8
-    volume_type = "gp3"
+    volume_size = var.root_volume_size
+    volume_type = var.root_volume_type
   }
 
   tags = {
