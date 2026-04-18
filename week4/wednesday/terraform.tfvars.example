@@ -1,0 +1,16 @@
+region             = "af-south-1"
+availability_zone  = "af-south-1a"
+instance_type      = "t2.micro"
+logs_instance_type = "t2.micro"
+ssh_key_name       = "kijani-admin-key"
+ssh_ingress_cidr   = "197.237.225.139/32"
+http_ingress_cidr  = "0.0.0.0/0"
+environment        = "staging"
+owner              = "amina"
+name_prefix        = "kijanikiosk"
+vpc_cidr           = "10.0.0.0/16"
+public_subnet_cidr = "10.0.1.0/24"
+assign_public_ip   = true
+root_volume_size   = 8
+root_volume_type   = "gp3"
+private_key_path   = "~/.ssh/kijani-admin-key.pem"
