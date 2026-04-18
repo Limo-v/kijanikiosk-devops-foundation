@@ -1,0 +1,5 @@
+service_name: kk-api
+service_port: 3000
+service_dir: /opt/kijanikiosk/api
+service_owner: kk-api
+env_file_name: db.env

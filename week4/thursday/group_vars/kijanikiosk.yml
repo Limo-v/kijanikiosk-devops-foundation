@@ -1,0 +1,65 @@
+service_group: kijanikiosk
+base_dir: /opt/kijanikiosk
+config_dir: /opt/kijanikiosk/config
+shared_log_dir: /opt/kijanikiosk/shared/logs
+health_dir: /opt/kijanikiosk/health
+journal_persistent_dir: /var/log/journal
+ops_user: ubuntu
+required_packages:
+  - acl
+  - ufw
+  - nginx
+  - nodejs
+  - logrotate
+common_directories:
+  - path: "{{ base_dir }}"
+    owner: root
+    group: "{{ service_group }}"
+    mode: "0755"
+  - path: "{{ config_dir }}"
+    owner: root
+    group: "{{ service_group }}"
+    mode: "0750"
+  - path: "{{ shared_log_dir }}"
+    owner: kk-logs
+    group: kk-logs
+    mode: "2770"
+  - path: "{{ health_dir }}"
+    owner: kk-logs
+    group: "{{ service_group }}"
+    mode: "0750"
+service_definitions:
+  kk-api:
+    workdir: "{{ base_dir }}/api"
+    exec_start: "/usr/bin/node {{ base_dir }}/api/server.js"
+    env_file: "{{ config_dir }}/db.env"
+    placeholder_file: "{{ base_dir }}/api/server.js"
+    placeholder_content: |
+      const http = require('http');
+      const port = process.env.SERVICE_PORT || 3000;
+      http.createServer((req, res) => {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end('kk-api running');
+      }).listen(port, '127.0.0.1');
+  kk-payments:
+    workdir: "{{ base_dir }}/payments"
+    exec_start: "/usr/bin/bash {{ base_dir }}/payments/run-payments.sh"
+    env_file: "{{ config_dir }}/payments-api.env"
+    placeholder_file: "{{ base_dir }}/payments/run-payments.sh"
+    placeholder_content: |
+      #!/usr/bin/env bash
+      while true; do
+        echo "payments heartbeat" >> {{ shared_log_dir }}/payments.log
+        sleep 300
+      done
+  kk-logs:
+    workdir: "{{ base_dir }}/logs"
+    exec_start: "/usr/bin/bash {{ base_dir }}/logs/run-logs.sh"
+    env_file: "{{ config_dir }}/logs.env"
+    placeholder_file: "{{ base_dir }}/logs/run-logs.sh"
+    placeholder_content: |
+      #!/usr/bin/env bash
+      while true; do
+        echo "logs heartbeat" >> {{ shared_log_dir }}/logs.log
+        sleep 300
+      done

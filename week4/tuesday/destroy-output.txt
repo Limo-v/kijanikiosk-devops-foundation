@@ -1,0 +1,4 @@
+Terraform destroy was not required for this workspace attempt.
+
+No infrastructure was created because the Terraform run could not authenticate to AWS.
+Once valid credentials are configured and resources are created, rerun terraform destroy to complete the teardown step cleanly.

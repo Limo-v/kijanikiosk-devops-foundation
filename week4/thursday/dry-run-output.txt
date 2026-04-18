@@ -1,0 +1,34 @@
+]633;E;echo 'Thursday Lab Validation';f7226f18-be67-4eb1-bf13-f353fba0d895]633;CThursday Lab Validation
+
+Ansible version:
+ansible [core 2.20.4]
+  config file = /home/kibet/Documents/Moringa/devops/ips/kijanikiosk-devops-foundation/week4/thursday/ansible.cfg
+  configured module search path = ['/home/kibet/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+
+Inventory host list:
+
+playbook: kijanikiosk.yml
+
+  play #1 (kijanikiosk): Configure KijaniKiosk servers	TAGS: []
+    pattern: ['kijanikiosk']
+    hosts (3):
+      api-staging
+      payments-staging
+      logs-staging
+
+Variable resolution check:
+api-staging | SUCCESS => {
+    "msg": "kk-api on port 3000"
+}
+payments-staging | SUCCESS => {
+    "msg": "kk-payments on port 3001"
+}
+logs-staging | SUCCESS => {
+    "msg": "kk-logs on port 5000"
+}
+
+Syntax check:
+
+playbook: kijanikiosk.yml
+
+Note: live host execution is pending replacement of placeholder IPs in inventory.ini.

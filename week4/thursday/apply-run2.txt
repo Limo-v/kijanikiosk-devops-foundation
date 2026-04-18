@@ -1,0 +1,13 @@
+Thursday Lab Notes - Second Ansible Run
+
+This file is prepared for the idempotency proof required by the lab.
+
+Once the live hosts are reachable and the first run completes, re-run:
+ansible-playbook -i inventory.ini kijanikiosk.yml
+
+Expected proof:
+- changed=0 on api-staging
+- changed=0 on payments-staging
+- changed=0 on logs-staging
+
+If any host still shows changes, the non-idempotent task should be corrected before submission.

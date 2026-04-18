@@ -1,0 +1,12 @@
+Wednesday Lab - Phase 4 Drift Detection Notes
+
+Why this step matters:
+Drift detection shows whether anyone changed the infrastructure manually in the cloud console instead of through Terraform. It is the quickest way to prove that code remains the source of truth.
+
+Observed status in this repository session:
+- A live drift check could not be captured because the AWS provider initialization in the CLI did not complete during the session.
+- The configuration is ready for a live plan after the provider finishes installing and credentials are confirmed.
+
+What Terraform should show during a real drift test:
+- If you manually edit a tag or Name value in the console, terraform plan should show that attribute drifting from the declared configuration.
+- The preferred remediation is to restore the declared state with terraform apply so the infrastructure stays reviewable and reproducible from code.

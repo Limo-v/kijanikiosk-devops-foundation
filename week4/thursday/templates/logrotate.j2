@@ -1,0 +1,12 @@
+{{ shared_log_dir }}/*.log {
+    daily
+    rotate 14
+    compress
+    missingok
+    notifempty
+    create 0640 kk-logs {{ service_group }}
+    sharedscripts
+    postrotate
+        /bin/systemctl kill -s HUP {{ service_name }}.service >/dev/null 2>&1 || true
+    endscript
+}

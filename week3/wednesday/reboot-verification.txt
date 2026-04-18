@@ -1,0 +1,12 @@
+# Reboot Verification (Wednesday)
+
+Run these commands after rebooting the VM, then replace this file contents with full output:
+
+systemctl status kk-api.service
+apt-mark showhold
+ufw status
+
+Expected:
+- kk-api.service is enabled (can be inactive/dead if no app code is deployed)
+- nginx and nodejs are present in hold list
+- ufw is active with SSH and HTTP rules

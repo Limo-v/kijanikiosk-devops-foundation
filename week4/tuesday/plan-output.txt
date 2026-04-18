@@ -1,0 +1,18 @@
+Terraform v1.6.0 on linux_amd64
+
+Environment check
+- Terraform binary detected successfully.
+- AWS CLI is installed, but authentication failed.
+
+Observed AWS CLI output:
+aws: [ERROR]: An error occurred (NoCredentials): Unable to locate credentials. You can configure credentials by running "aws login".
+
+Terraform plan attempt
+- Provider initialization started for hashicorp/aws ~> 5.0.
+- A complete terraform plan could not be produced from this workspace because AWS credentials were not configured.
+
+# Lab notes
+# Resources to be created: unavailable from a completed plan because provider authentication did not complete.
+# Any -/+ replacement markers: none observed because no successful diff was produced.
+# Resolved Ubuntu AMI ID: unavailable without provider access.
+# Known-after-apply values would include the instance public IP, instance ID, and public DNS because AWS assigns them only when the instance is created.
