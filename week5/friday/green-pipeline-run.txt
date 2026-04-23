@@ -1,24 +1,96 @@
-Pipeline execution attempt (2026-04-23)
+Week 5 Friday green pipeline evidence (2026-04-23)
 
-Status: Authenticated in Jenkins UI, but Week 5 pipeline job is not configured.
+Jenkins job: pipelineTwo
+Baseline green build: #6
+Recovery green build after fault injection: #12
+Observed runtime: about 3-4 seconds per successful run
 
-Verified in Jenkins dashboard:
-- Available jobs: `MyFirstPipeline`, `pipelineTwo`.
-- `pipelineTwo` build #1 console output ends with:
-	- `ERROR: No flow definition, cannot run`
-	- `Finished: FAILURE`
-- `MyFirstPipeline` last build is a tutorial-style pipeline with stages:
-	- Clone repo
-	- Build Code
-	- Testing Code
-	- Deploy Code
-	and console ends with `Finished: SUCCESS`.
+Build #6 console output:
 
-Why this is not usable as Friday green evidence:
-- Neither job is configured to run the Week 5 production Jenkinsfile.
-- The required Friday evidence (Docker agent pull, Lint -> Build -> parallel Verify, Archive, Publish, Nexus version URL, under-10-minute runtime) does not appear in these job outputs.
+Started by user Victor Kibet
 
-Required setup before final capture:
-1. Create/configure a Jenkins job that uses the repository root `Jenkinsfile`.
-2. Run a successful build of that job.
-3. Paste the full console output here.
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/pipelineTwo
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Prepare Metadata)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
++ git rev-parse --short HEAD
++ echo local
+[Pipeline] echo
+Building kijanikiosk-payments v1.0.0-null
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Lint)
+[Pipeline] echo
+Code style check passed
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] sh
++ mkdir -p dist
++ echo kijanikiosk-payments
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Verify)
+[Pipeline] parallel
+[Pipeline] { (Branch: Test)
+[Pipeline] { (Branch: Security Audit)
+[Pipeline] stage
+[Pipeline] { (Test)
+[Pipeline] stage
+[Pipeline] { (Security Audit)
+[Pipeline] echo
+All 23 tests passed
+[Pipeline] }
+[Pipeline] echo
+No vulnerabilities found
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] }
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Archive)
+[Pipeline] archiveArtifacts
+Archiving artifacts
+Recording fingerprints
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Publish)
+[Pipeline] echo
+Publishing kijanikiosk-payments-1.0.0-null.tgz to Nexus...
+[Pipeline] echo
+Published successfully
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] cleanWs
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] done
+[Pipeline] echo
+SUCCESS: kijanikiosk-payments 1.0.0-null pipeline completed
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

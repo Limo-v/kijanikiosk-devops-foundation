@@ -1,16 +1,9 @@
 # Week 5 Friday Fault Injection Log
 
-Complete this table from real Jenkins runs. Fault one stage at a time, restore green, then move to the next stage.
-
 | Stage faulted | Fault introduced | Expected behaviour | Observed (build #) | Design rationale |
 | --- | --- | --- | --- | --- |
-| Lint | Break formatting or add lint violation. | Pipeline fails in Lint. Build, Verify, Archive, and Publish skip. | Blocked - Week 5 job not configured | Fast failure protects CI minutes and blocks low-quality code quickly. |
-| Build | Break build command or force missing output directory. | Lint passes, Build fails, remaining stages skip. | Blocked - Week 5 job not configured | No verification or publishing should occur without a valid build artifact. |
-| Test | Add a deliberate failing assertion. | Build succeeds, Verify fails due to Test branch, Archive and Publish skip. | Blocked - Week 5 job not configured | Release is blocked when functional checks fail even if build output exists. |
-| Security Audit | Force a high-severity dependency vulnerability. | Test may pass, Verify still fails due to audit branch, Archive and Publish skip. | Blocked - Week 5 job not configured | Dependency risk is a release gate equal to test quality for a payments service. |
-| Publish | Use wrong credential ID or invalid Nexus auth. | Archive succeeds, Publish fails, artifact stays in Jenkins but not Nexus. | Blocked - Week 5 job not configured | Internal artifact traceability remains while external publication is safely blocked. |
-
-Notes:
-- Jenkins UI access is confirmed, and existing jobs were inspected on 2026-04-23.
-- Existing `pipelineTwo` job fails with `No flow definition`, so fault injection cannot be executed yet against the Week 5 pipeline.
-- Replace each blocked entry with real build numbers after the Week 5 job is configured to use the root `Jenkinsfile`.
+| Lint | Replayed build #6 with an injected `error('Lint failure injected for Friday evidence')` in the Lint stage. | Pipeline fails in Lint. Build, Verify, Archive, and Publish skip. | Build #7 failed in Lint; Build, Verify, Archive, and Publish were skipped. | Fast failure protects CI minutes and blocks low-quality code quickly. |
+| Build | Replayed build #6 with an injected `error('Build failure injected for Friday evidence')` in the Build stage. | Lint passes, Build fails, remaining stages skip. | Build #8 passed Prepare Metadata and Lint, then failed in Build; Verify, Archive, and Publish were skipped. | No verification or publishing should occur without a valid build artifact. |
+| Test | Replayed build #6 with an injected `error('Test failure injected for Friday evidence')` in the Test branch of Verify. | Build succeeds, Verify fails due to Test branch, Archive and Publish skip. | Build #9 reached Verify; Test failed, Security Audit still ran, then Archive and Publish were skipped. | Release is blocked when functional checks fail even if build output exists. |
+| Security Audit | Replayed build #6 with an injected `error('Security audit failure injected for Friday evidence')` in the Security Audit branch. | Test may pass, Verify still fails due to audit branch, Archive and Publish skip. | Build #10 reached Verify; Test passed, Security Audit failed, then Archive and Publish were skipped. | Dependency risk is a release gate equal to test quality for a payments service. |
+| Publish | Replayed build #6 with an injected `error('Publish failure injected for Friday evidence')` in Publish. | Archive succeeds, Publish fails, artifact stays in Jenkins but not Nexus. | Build #11 completed Prepare Metadata, Lint, Build, Verify, and Archive, then failed in Publish after artifacts were fingerprinted. | Internal artifact traceability remains while external publication is safely blocked. |
