@@ -1,0 +1,24 @@
+Pipeline execution attempt (2026-04-23)
+
+Status: Authenticated in Jenkins UI, but Week 5 pipeline job is not configured.
+
+Verified in Jenkins dashboard:
+- Available jobs: `MyFirstPipeline`, `pipelineTwo`.
+- `pipelineTwo` build #1 console output ends with:
+	- `ERROR: No flow definition, cannot run`
+	- `Finished: FAILURE`
+- `MyFirstPipeline` last build is a tutorial-style pipeline with stages:
+	- Clone repo
+	- Build Code
+	- Testing Code
+	- Deploy Code
+	and console ends with `Finished: SUCCESS`.
+
+Why this is not usable as Friday green evidence:
+- Neither job is configured to run the Week 5 production Jenkinsfile.
+- The required Friday evidence (Docker agent pull, Lint -> Build -> parallel Verify, Archive, Publish, Nexus version URL, under-10-minute runtime) does not appear in these job outputs.
+
+Required setup before final capture:
+1. Create/configure a Jenkins job that uses the repository root `Jenkinsfile`.
+2. Run a successful build of that job.
+3. Paste the full console output here.
