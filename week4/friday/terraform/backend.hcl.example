@@ -1,0 +1,5 @@
+bucket         = "kijanikiosk-tf-state-REPLACE_ACCOUNT_ID"
+key            = "week4/friday/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "kijanikiosk-terraform-locks"
+encrypt        = true

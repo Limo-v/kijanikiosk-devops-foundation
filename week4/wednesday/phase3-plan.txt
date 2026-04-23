@@ -1,0 +1,17 @@
+Wednesday Lab - Phase 3 State Refactor Notes
+
+Why this step matters:
+The state move step prevents Terraform from thinking the original api server disappeared during the module refactor. If the address is moved correctly, Terraform keeps the existing server and only tracks it under the new module path.
+
+Observed status in this repository session:
+- No prior Wednesday state was available to migrate.
+- The Tuesday lab attempt in this workspace did not create live AWS resources.
+- Because of that, the state mv step was prepared conceptually but did not need to run here.
+
+Expected result on the first real modular plan:
+- 11 resources to add
+- 0 resources to change
+- 0 resources to destroy
+
+If an existing api instance is present in state during a live run, move it first to:
+module.app_servers["api"].aws_instance.this
