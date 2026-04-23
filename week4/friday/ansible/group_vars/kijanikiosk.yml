@@ -1,0 +1,36 @@
+service_group: kijanikiosk
+base_dir: /opt/kijanikiosk
+config_dir: /opt/kijanikiosk/config
+shared_log_dir: /opt/kijanikiosk/shared/logs
+health_dir: /opt/kijanikiosk/health
+journal_persistent_dir: /var/log/journal
+required_packages:
+  - acl
+  - ufw
+  - nginx
+  - nodejs
+  - logrotate
+common_directories:
+  - path: "{{ base_dir }}"
+    owner: root
+    group: "{{ service_group }}"
+    mode: "0755"
+  - path: "{{ config_dir }}"
+    owner: root
+    group: "{{ service_group }}"
+    mode: "0750"
+  - path: "{{ shared_log_dir }}"
+    owner: "{{ service_owner }}"
+    group: "{{ service_owner }}"
+    mode: "2770"
+  - path: "{{ health_dir }}"
+    owner: "{{ service_owner }}"
+    group: "{{ service_group }}"
+    mode: "0750"
+service_definitions:
+  kk-api:
+    exec_start: "/usr/bin/node {{ service_dir }}/server.js"
+  kk-payments:
+    exec_start: "/usr/bin/bash {{ service_dir }}/run-payments.sh"
+  kk-logs:
+    exec_start: "/usr/bin/bash {{ service_dir }}/run-logs.sh"

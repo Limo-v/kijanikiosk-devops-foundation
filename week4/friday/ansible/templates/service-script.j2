@@ -1,0 +1,22 @@
+{% if service_name == 'kk-api' %}
+const http = require('http');
+const port = parseInt(process.env.SERVICE_PORT || '{{ service_port }}', 10);
+http.createServer((req, res) => {
+  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.end('kk-api running');
+}).listen(port, '127.0.0.1');
+{% elif service_name == 'kk-payments' %}
+#!/usr/bin/env bash
+set -eu
+while true; do
+  echo "payments heartbeat" >> {{ shared_log_dir }}/payments.log
+  sleep 300
+done
+{% else %}
+#!/usr/bin/env bash
+set -eu
+while true; do
+  echo "logs heartbeat" >> {{ shared_log_dir }}/logs.log
+  sleep 300
+done
+{% endif %}

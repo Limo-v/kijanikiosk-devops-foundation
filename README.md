@@ -1,27 +1,24 @@
 # KijaniKiosk DevOps Foundation
 
-A DevOps Starter Kit capturing the engineering infrastructure foundations for the KijaniKiosk online platform before the system goes live.
+This repo is for my DevOps week work for KijaniKiosk. I am still learning, so some files are more like rough notes and lab output.
 
-## Repository Structure
+## Whats inside
 
-```
-starter-kit/
-├── delivery-notes.md       # DevOps mindset: Flow, Feedback, and Learning
-├── cloud-model.md          # Cloud service model justification (IaaS/PaaS/SaaS)
-├── regions-azs.md          # Region selection and multi-AZ reliability design
-├── iam-least-privilege.md  # IAM role/policy design using least privilege
-└── network-topology.png    # Public/private subnet architecture diagram
-```
+- starter-kit docs from earlier tasks
+- week3 folder for tuesday/wednesday/thursday lab submission files
+- a small python script for topology generation (basic)
 
-## Branch Strategy
+## Branches (simple)
 
-| Branch | Purpose |
-|---|---|
-| `main` | Production-ready, stable documentation |
-| `develop` | Integration branch for completed features |
-| `feature/starter-kit-files` | Feature branch for this starter kit |
+- main: final stable stuff
+- develop: merge place
+- feature branches: where I do work first
 
-## Getting Started
+## Quick start
+
+Clone repo, open it, then switch to branch you need.
+
+Example:
 
 ```bash
 git clone https://github.com/<your-username>/kijanikiosk-devops-foundation.git

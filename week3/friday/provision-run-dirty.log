@@ -1,0 +1,57 @@
+[2026-04-03T05:51:17+0300] [INFO] === Phase 1: Pre-Provisioning Audit Capture ===
+[2026-04-03T05:51:18+0300] [INFO] Wrote audit output: /home/kibet/Documents/Moringa/devops/kijanikiosk-devops-foundation/week3/friday/pre-provisioning-audit.txt
+[2026-04-03T05:51:18+0300] [INFO] === Phase 2: Package Pinning and Drift Handling ===
+Hit:1 http://ke.archive.ubuntu.com/ubuntu questing InRelease
+Get:2 http://ke.archive.ubuntu.com/ubuntu questing-updates InRelease [136 kB]
+Get:3 http://ke.archive.ubuntu.com/ubuntu questing-backports InRelease [133 kB]
+Get:4 http://ke.archive.ubuntu.com/ubuntu questing-updates/main amd64 Packages [372 kB]
+Get:5 http://ke.archive.ubuntu.com/ubuntu questing-updates/main Translation-en [102 kB]
+Get:6 http://ke.archive.ubuntu.com/ubuntu questing-updates/main amd64 Components [52.4 kB]
+Get:7 http://ke.archive.ubuntu.com/ubuntu questing-updates/restricted amd64 Components [212 B]
+Get:8 http://ke.archive.ubuntu.com/ubuntu questing-updates/universe amd64 Packages [272 kB]
+Hit:9 https://ppa.launchpadcontent.net/ansible/ansible/ubuntu questing InRelease
+Get:10 http://security.ubuntu.com/ubuntu questing-security InRelease [136 kB]
+Get:11 http://ke.archive.ubuntu.com/ubuntu questing-updates/universe amd64 Components [44.0 kB]
+Get:12 http://ke.archive.ubuntu.com/ubuntu questing-updates/universe amd64 c-n-f Metadata [6,820 B]
+Get:13 http://ke.archive.ubuntu.com/ubuntu questing-updates/multiverse amd64 Components [944 B]
+Get:14 http://ke.archive.ubuntu.com/ubuntu questing-backports/main amd64 Components [212 B]
+Get:15 http://ke.archive.ubuntu.com/ubuntu questing-backports/restricted amd64 Components [216 B]
+Get:16 http://ke.archive.ubuntu.com/ubuntu questing-backports/universe amd64 Components [5,732 B]
+Get:17 http://ke.archive.ubuntu.com/ubuntu questing-backports/multiverse amd64 Components [216 B]
+Get:18 http://security.ubuntu.com/ubuntu questing-security/main amd64 Packages [271 kB]
+Get:19 http://security.ubuntu.com/ubuntu questing-security/main Translation-en [72.5 kB]
+Get:20 http://security.ubuntu.com/ubuntu questing-security/main amd64 Components [2,720 B]
+Get:21 http://security.ubuntu.com/ubuntu questing-security/main amd64 c-n-f Metadata [6,596 B]
+Get:22 http://security.ubuntu.com/ubuntu questing-security/restricted amd64 Packages [186 kB]
+Get:23 http://security.ubuntu.com/ubuntu questing-security/restricted Translation-en [41.0 kB]
+Get:24 http://security.ubuntu.com/ubuntu questing-security/restricted amd64 Components [212 B]
+Get:25 http://security.ubuntu.com/ubuntu questing-security/universe amd64 Packages [214 kB]
+Get:26 http://security.ubuntu.com/ubuntu questing-security/universe Translation-en [57.2 kB]
+Get:27 http://security.ubuntu.com/ubuntu questing-security/universe amd64 Components [12.6 kB]
+Get:28 http://security.ubuntu.com/ubuntu questing-security/universe amd64 c-n-f Metadata [5,728 B]
+Get:29 http://security.ubuntu.com/ubuntu questing-security/multiverse amd64 Components [212 B]
+Get:30 https://apt.releases.hashicorp.com questing InRelease [11.2 kB]
+Get:31 https://apt.releases.hashicorp.com questing/main amd64 Packages [227 kB]
+Fetched 2,368 kB in 7s (351 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+acl is already the newest version (2.3.2-2).
+acl set to manually installed.
+ufw is already the newest version (0.36.2-9).
+ufw set to manually installed.
+logrotate is already the newest version (3.22.0-1).
+logrotate set to manually installed.
+Solving dependencies...
+0 upgraded, 0 newly installed, 0 to remove and 61 not upgraded.
+nginx set on hold.
+nodejs set on hold.
+[2026-04-03T05:51:29+0300] [INFO] === Phase 3: Service Accounts and Groups ===
+[2026-04-03T05:51:30+0300] [INFO] Created group: kijanikiosk
+[2026-04-03T05:51:30+0300] [INFO] Created service user: kk-api
+[2026-04-03T05:51:30+0300] [INFO] Created service user: kk-payments
+[2026-04-03T05:51:30+0300] [INFO] Created service user: kk-logs
+[2026-04-03T05:51:30+0300] [INFO] === Phase 4: Directory Ownership, Modes, and ACLs ===
+[2026-04-03T05:51:30+0300] [INFO] === Phase 5: Hardened systemd Units (All Services) ===
+[RUN-1-EXIT-CODE] 1

@@ -1,0 +1,35 @@
+# Pre-Provisioning Audit
+# Generated: 2026-04-03T05:51:17+03:00
+
+## Raw command output
+$ getent passwd kk-api kk-payments kk-logs
+
+$ getent group kijanikiosk
+
+$ ls -la /opt/kijanikiosk/
+ls: cannot access '/opt/kijanikiosk/': No such file or directory
+
+$ getfacl /opt/kijanikiosk/shared/logs/
+getfacl: /opt/kijanikiosk/shared/logs/: No such file or directory
+
+$ getfacl /opt/kijanikiosk/config/
+getfacl: /opt/kijanikiosk/config/: No such file or directory
+
+$ sudo ufw status numbered
+Status: inactive
+
+$ apt-mark showhold
+
+$ systemctl list-unit-files | grep kk-
+
+$ sudo systemd-analyze security kk-api.service | head -5
+
+$ du -sh /opt/kijanikiosk/shared/logs/
+du: cannot access '/opt/kijanikiosk/shared/logs/': No such file or directory
+
+$ journalctl --disk-usage
+Archived and active journals take up 2.4G in the file system.
+
+## Interpretation comments (update after review)
+- [ ] Which dirty-state conditions are present?
+- [ ] Which ones will this script converge?
