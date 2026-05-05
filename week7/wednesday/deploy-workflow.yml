@@ -1,0 +1,98 @@
+name: Deploy with Blue/Green Switch
+
+on:
+  push:
+    branches: [ feature/week7-deployment-pipeline ]
+
+jobs:
+  set-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_env: ${{ steps.set-env.outputs.deploy_env }}
+      app_version: ${{ steps.set-env.outputs.app_version }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set deployment environment
+        id: set-env
+        run: |
+          # Deploy to green if main is on blue, blue if main is on green
+          DEPLOY_ENV="green"
+          APP_VERSION="v1.4.0"
+          echo "deploy_env=${DEPLOY_ENV}" >> $GITHUB_OUTPUT
+          echo "app_version=${APP_VERSION}" >> $GITHUB_OUTPUT
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: set-environment
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to ${{ needs.set-environment.outputs.deploy_env }}
+        run: |
+          echo "Deploying ${{ needs.set-environment.outputs.app_version }} to ${{ needs.set-environment.outputs.deploy_env }}"
+          echo "This would run: deploy-app.sh with the appropriate version and environment"
+
+  verify:
+    runs-on: ubuntu-latest
+    needs: [ set-environment, apply ]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment to ${{ needs.set-environment.outputs.deploy_env }}"
+          echo "This would run: health checks and version verification"
+
+  configure:
+    runs-on: ubuntu-latest
+    needs: [ set-environment, verify ]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure environment
+        run: |
+          echo "Configuring ${{ needs.set-environment.outputs.deploy_env }} environment"
+          echo "This would run: Ansible configuration or additional setup"
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: [ set-environment, configure ]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy application
+        run: |
+          echo "Running deploy-app.sh for ${{ needs.set-environment.outputs.app_version }}"
+          echo "Environment: ${{ needs.set-environment.outputs.deploy_env }}"
+
+  switch-traffic:
+    runs-on: ubuntu-latest
+    needs: [ set-environment, deploy-app ]
+    if: success()
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Switch traffic to ${{ needs.set-environment.outputs.deploy_env }}
+        run: |
+          echo "Switching traffic to ${{ needs.set-environment.outputs.deploy_env }}"
+          echo "This would run: switch-env.sh ${{ needs.set-environment.outputs.deploy_env }}"
+          echo "Step 1: Pre-switch health check on ${{ needs.set-environment.outputs.deploy_env }}"
+          echo "Step 2: Update nginx configuration"
+          echo "Step 3: Validate nginx config"
+          echo "Step 4: Reload nginx"
+          echo "Step 5: Post-switch proxy health check"
+
+  auto-rollback:
+    runs-on: ubuntu-latest
+    needs: [ set-environment, switch-traffic ]
+    if: failure()
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Automatic rollback to previous environment
+        run: |
+          echo "Switch or deployment failed. Initiating automatic rollback."
+          echo "This would run: rollback.sh"
+          echo "Target: Previous environment from .previous-env file"
+          echo "Restoring traffic to stable previous version"

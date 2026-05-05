@@ -1,0 +1,145 @@
+=== AUTOMATED ROLLBACK TEST: MONITOR EXECUTION LOG ===
+Executed: 2026-05-05 15:00:00 UTC
+Confidence Window: 60 seconds
+Environment: Staging VM
+
+=== PRE-TEST STATE ===
+
+Active environment: green (v1.4.0)
+Previous environment: blue (v1.3.0)
+
+$ curl -s http://127.0.0.1/health | python3 -m json.tool
+{
+  "features": ["improved-performance", "better-error-handling"],
+  "port": 3001,
+  "status": "ok",
+  "timestamp": "2026-05-05T15:00:01.234Z",
+  "uptime": 520.456,
+  "version": "v1.4.0"
+}
+
+=== STARTING MONITOR ===
+
+$ sudo bash /opt/kijanikiosk/scripts/post-deploy-monitor.sh 60
+
+[15:00:10] [MONITOR] === Post-Deployment Monitor Starting ===
+[15:00:10] [MONITOR] Confidence window: 60 seconds
+[15:00:10] [MONITOR] Health check interval: 5 seconds
+[15:00:10] [MONITOR] Rollback threshold: 3 consecutive failures
+[15:00:10] [MONITOR] Latency threshold: 2000ms
+[15:00:10] [MONITOR] Error rate threshold: 2 errors per window
+[15:00:10] [MONITOR] T0 (Monitor start): 15:00:10
+[15:00:10] [MONITOR]
+[15:00:15] [MONITOR] Poll 1: HTTP 200 | 45ms | elapsed: 5s | version: v1.4.0
+[15:00:20] [MONITOR] Poll 2: HTTP 200 | 38ms | elapsed: 10s | version: v1.4.0
+[15:00:25] [MONITOR] Poll 3: HTTP 200 | 42ms | elapsed: 15s | version: v1.4.0
+[15:00:30] [MONITOR] Poll 4: HTTP 200 | 51ms | elapsed: 20s | version: v1.4.0
+[15:00:35] [MONITOR] Poll 5: HTTP 200 | 46ms | elapsed: 25s | version: v1.4.0
+[15:00:40] [MONITOR] Poll 6: HTTP 200 | 40ms | elapsed: 30s | version: v1.4.0
+
+=== INTRODUCING FAULT (simulating green service crash) ===
+
+On second terminal:
+$ sudo systemctl stop kk-api-green.service
+
+=== MONITOR DETECTS FAULT ===
+
+[15:00:45] [MONITOR] Poll 7: HTTP 502 | 3ms | elapsed: 35s
+[15:00:45] [MONITOR WARN] Health check failed (consecutive: 1, window errors: 1)
+[15:00:50] [MONITOR] Poll 8: HTTP 502 | 4ms | elapsed: 40s
+[15:00:50] [MONITOR WARN] Health check failed (consecutive: 2, window errors: 2)
+[15:00:55] [MONITOR] Poll 9: HTTP 502 | 3ms | elapsed: 45s
+[15:00:55] [MONITOR WARN] Health check failed (consecutive: 3, window errors: 3)
+[15:00:55] [MONITOR FAIL] ROLLBACK TRIGGERED: 3 consecutive health check failures
+[15:00:55] [MONITOR FAIL] Calling rollback.sh...
+[15:00:55] [MONITOR] T1 (First failure): 15:00:45
+
+=== ROLLBACK EXECUTION ===
+
+[15:00:55] [ROLLBACK] [15:00:55] Rolling back to previous environment: blue
+[15:00:55] Current environment: green
+[15:00:55] Target environment:  blue
+[15:00:55]
+[15:00:55] Step 1: Verifying blue is healthy on port 3000...
+[15:00:55] ✓ Pre-switch health check passed: blue is healthy
+[15:00:55]
+[15:00:55] Step 2: Writing new nginx active-env configuration...
+[15:00:55] ✓ Nginx configuration written
+[15:00:55]
+[15:00:56] Step 3: Validating nginx configuration...
+[15:00:56] nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+[15:00:56] nginx: configuration test is successful
+[15:00:56] ✓ Nginx configuration is valid
+[15:00:56]
+[15:00:56] Step 4: Reloading nginx...
+[15:00:56] ✓ nginx reloaded. Traffic now routing to blue.
+[15:00:56]
+[15:00:56] Step 5: Confirming switch via proxy health check...
+[15:00:56] ✓ Post-switch confirmation passed: proxy is routing to blue (port 3000)
+[15:00:56]
+[15:00:56] Updating state files...
+[15:00:56] ✓ State files updated:
+[15:00:56]   /opt/kijanikiosk/.active-env: blue
+[15:00:56]   /opt/kijanikiosk/.previous-env: green
+[15:00:56]
+[15:00:56] === Switch to blue complete ===
+[15:00:56] Summary:
+[15:00:56]   - Traffic now routing to: blue
+[15:00:56]   - Upstream port: 3000
+[15:00:56]   - Previous environment: green
+[15:00:56]   - nginx config: /etc/nginx/kijanikiosk-active-env.conf
+
+[ROLLBACK] [15:00:56] Rollback completed successfully.
+[ROLLBACK] [15:00:56] Active environment: blue
+[ROLLBACK] [15:00:56] Previous environment: green
+[15:00:57] [MONITOR] Post-rollback health check passed
+[15:00:57] [MONITOR SUCCESS] Rollback completed successfully.
+[15:00:57] [MONITOR] T2 (Rollback complete): 15:00:57
+[15:00:57] [MONITOR] Total duration T0→T2: 47 seconds
+
+Exit code: 0
+
+=== POST-ROLLBACK VERIFICATION ===
+
+Proxy routing (now on blue):
+$ curl -s http://127.0.0.1/health | python3 -m json.tool
+{
+  "port": 3000,
+  "status": "ok",
+  "timestamp": "2026-05-05T15:00:58.567Z",
+  "uptime": 527.234,
+  "version": "v1.3.0"
+}
+
+State files:
+$ cat /opt/kijanikiosk/.active-env
+blue
+
+$ cat /opt/kijanikiosk/.previous-env
+green
+
+=== KEY MEASUREMENTS ===
+
+T0 (Monitor start):        15:00:10
+T1 (First failure):        15:00:45
+T2 (Rollback complete):    15:00:57
+
+Duration T0→T2:           47 seconds
+Duration T1→T2:           12 seconds (from first failure to complete recovery)
+Rollback threshold:       3 consecutive failures (15 seconds at 5s interval)
+Total under SLO:          ✓ 47 seconds < 90 second target
+
+Failures detected:        HTTP 502 from green (port 3001)
+Recovery action:          Automatic switch to blue (port 3000)
+Human intervention:       None required
+
+=== SUCCESS CRITERIA MET ===
+
+✓ Monitor starts before switch (baseline established)
+✓ Monitor detects consecutive failures
+✓ Rollback triggered automatically at threshold
+✓ Rollback completes and service is healthy
+✓ T0-to-T2 duration: 47 seconds (under 90 second SLO)
+✓ State files consistent after rollback
+✓ Proxy confirms blue is active with v1.3.0
+✓ No manual intervention required

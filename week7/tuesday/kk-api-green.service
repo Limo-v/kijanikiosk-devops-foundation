@@ -1,0 +1,22 @@
+[Unit]
+Description=KijaniKiosk API Service (Green)
+After=network-online.target
+
+[Service]
+Type=simple
+User=kk-api
+Group=kk-api
+WorkingDirectory=/opt/kijanikiosk/green/app
+ExecStart=/usr/bin/node /opt/kijanikiosk/green/app/server.js
+Environment=PORT=3001
+Environment=APP_VERSION=v1.4.0
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/kijanikiosk/green
+ReadWritePaths=/opt/kijanikiosk/shared/logs
+
+[Install]
+WantedBy=multi-user.target
