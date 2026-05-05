@@ -1,0 +1,17 @@
+Thursday Lab Notes - First Ansible Run
+
+This repository now contains the full Ansible playbook, inventory structure, templates, and host variable files needed for the live Thursday configuration run.
+
+A real first run against the three Wednesday servers is still pending because the inventory currently uses placeholder IP values rather than active VM addresses.
+
+When the Wednesday infrastructure is live, run:
+ansible-playbook -i inventory.ini kijanikiosk.yml
+
+Expected outcome on run 1:
+- packages installed
+- service accounts created
+- directory tree created
+- systemd units deployed
+- firewall rules applied
+- persistent journal configured
+- logrotate policy deployed

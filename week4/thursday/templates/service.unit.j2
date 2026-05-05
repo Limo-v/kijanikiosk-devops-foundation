@@ -1,0 +1,34 @@
+[Unit]
+Description=KijaniKiosk {{ service_name }} service
+After=network.target
+
+[Service]
+Type=simple
+User={{ service_owner }}
+Group={{ service_owner }}
+WorkingDirectory={{ service_dir }}
+EnvironmentFile={{ service_env_path }}
+ExecStart={{ service_meta.exec_start }}
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+PrivateDevices=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths={{ shared_log_dir }} {{ health_dir }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        NODE_ENV = 'test'
+        BUILD_DIR = 'dist'
+        APP_NAME = 'kijanikiosk-payments'
+    }
+
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh '''
+                    set -e
+                    npm ci
+                    npm run build
+                    test -d "$BUILD_DIR"
+                    file_count="$(find "$BUILD_DIR" -type f | wc -l)"
+                    test "$file_count" -gt 0
+                    echo "Build output contains ${file_count} files"
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                    set -e
+                    npm test -- --ci
+                '''
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'reports/junit/**/*.xml, junit.xml, test-results/**/*.xml'
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: "${BUILD_DIR}/**", fingerprint: true, onlyIfSuccessful: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "SUCCESS: ${APP_NAME} build #${BUILD_NUMBER} archived artifacts at ${BUILD_URL}artifact/"
+        }
+        failure {
+            echo "FAILURE: ${APP_NAME} build #${BUILD_NUMBER} failed. Review ${BUILD_URL}console for details."
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

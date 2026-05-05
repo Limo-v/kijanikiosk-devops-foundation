@@ -1,0 +1,136 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:18-alpine'
+            args '-v /tmp:/tmp'
+        }
+    }
+
+    environment {
+        NODE_ENV = 'test'
+        BUILD_DIR = 'dist'
+        APP_NAME = 'kijanikiosk-payments'
+        NEXUS_URL = 'http://172.17.0.1:8081/repository/npm-kijanikiosk/'
+        PKG_VERSION = ''
+        GIT_SHORT = ''
+        ARTIFACT_VERSION = ''
+        ARTIFACT_URL = ''
+    }
+
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Prepare Metadata') {
+            steps {
+                script {
+                    env.PKG_VERSION = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
+                    env.GIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    env.ARTIFACT_VERSION = "${env.PKG_VERSION}-${env.GIT_SHORT}"
+                    env.ARTIFACT_URL = "${env.NEXUS_URL}${env.APP_NAME}/-/${env.APP_NAME}-${env.ARTIFACT_VERSION}.tgz"
+                }
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh '''
+                    set -e
+                    npm ci --no-audit
+                    npm run lint
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''
+                    set -e
+                    npm run build
+                    test -d "$BUILD_DIR"
+                    file_count="$(find "$BUILD_DIR" -type f | wc -l)"
+                    test "$file_count" -gt 0
+                    echo "Build output contains ${file_count} files"
+                '''
+                stash name: 'publishable-workspace', includes: 'dist/**,package.json,package-lock.json', useDefaultExcludes: false
+            }
+        }
+
+        stage('Verify') {
+            parallel {
+                stage('Test') {
+                    steps {
+                        unstash 'publishable-workspace'
+                        sh '''
+                            set -e
+                            npm test -- --ci --reporters=default --reporters=jest-junit
+                        '''
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'reports/junit/**/*.xml, junit.xml, test-results/**/*.xml'
+                        }
+                    }
+                }
+                stage('Security Audit') {
+                    steps {
+                        sh '''
+                            set -e
+                            npm audit --audit-level=high
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: "${BUILD_DIR}/**", fingerprint: true, onlyIfSuccessful: true
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexus-credentials',
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    sh '''
+                        set -e
+                        token="$(printf '%s:%s' "$NEXUS_USER" "$NEXUS_PASS" | base64 | tr -d '\n')"
+                        trap 'rm -f .npmrc' EXIT
+
+                        cat > .npmrc <<EOF
+                        registry=${NEXUS_URL}
+                        //172.17.0.1:8081/repository/npm-kijanikiosk/:_auth=${token}
+                        email=ci@kijanikiosk.local
+                        always-auth=true
+                        EOF
+
+                        npm version --no-git-tag-version "$ARTIFACT_VERSION"
+                        npm publish --registry "$NEXUS_URL"
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "SUCCESS: ${APP_NAME} ${ARTIFACT_VERSION} published to ${ARTIFACT_URL}"
+        }
+        failure {
+            echo "FAILURE: ${APP_NAME} build #${BUILD_NUMBER} failed. Review ${BUILD_URL}console for details."
+        }
+        changed {
+            echo "Build status changed to ${currentBuild.currentResult} - ${JOB_NAME} #${BUILD_NUMBER}"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

@@ -1,0 +1,8 @@
+[template] Run immediately after run1:
+sudo bash week3/wednesday/kijanikiosk-provision.sh 2>&1 | tee week3/wednesday/provision-run2.log
+
+Replace this template with actual run output.
+Expected signals:
+- Exit code 0
+- "Already exists" lines for users/groups
+- No errors

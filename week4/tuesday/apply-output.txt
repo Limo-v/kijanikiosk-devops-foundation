@@ -1,0 +1,12 @@
+Terraform apply was not executed in this environment.
+
+Reason:
+- The saved plan file was not created because AWS credentials were missing.
+- Verified environment output:
+  aws: [ERROR]: An error occurred (NoCredentials): Unable to locate credentials. You can configure credentials by running "aws login".
+
+Next step to complete the lab on a cloud account:
+1. Configure AWS credentials.
+2. Run terraform init.
+3. Run terraform plan -out=lab-plan.tfplan.
+4. Run terraform apply lab-plan.tfplan.
