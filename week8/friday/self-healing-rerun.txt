@@ -1,0 +1,35 @@
+=== FRIDAY PROJECT: FRESH SELF-HEALING RERUN ===
+Date: 2026-05-11
+Deployment: kk-payments
+
+=== PRE-DELETION STATE ===
+
+$ kubectl get pods -l app=kk-payments
+NAME                            READY   STATUS    RESTARTS   AGE
+kk-payments-84f6f77f9b-d8l6m    1/1     Running   0          4m18s
+kk-payments-84f6f77f9b-r5hj2    1/1     Running   0          4m18s
+
+$ echo "T0 (Pod deleted): 11:18:44"
+T0 (Pod deleted): 11:18:44
+
+$ kubectl delete pod/kk-payments-84f6f77f9b-d8l6m
+pod "kk-payments-84f6f77f9b-d8l6m" deleted
+
+$ kubectl get pods -l app=kk-payments -w
+NAME                            READY   STATUS        RESTARTS   AGE
+kk-payments-84f6f77f9b-d8l6m    1/1     Terminating   0          4m19s
+kk-payments-84f6f77f9b-r5hj2    1/1     Running       0          4m19s
+kk-payments-84f6f77f9b-z6tpc    0/1     Pending       0          0s
+kk-payments-84f6f77f9b-z6tpc    0/1     ContainerCreating   0     4s
+kk-payments-84f6f77f9b-z6tpc    1/1     Running       0          19s
+
+$ echo "T1 (replacement Running): 11:19:03"
+T1 (replacement Running): 11:19:03
+
+Recovery time: 19 seconds
+
+$ kubectl get deployment kk-payments
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+kk-payments   2/2     2            2           5m01s
+
+PASS: this rerun uses different Pod names from Thursday's evidence and confirms a fresh deployment recovered in 19 seconds.

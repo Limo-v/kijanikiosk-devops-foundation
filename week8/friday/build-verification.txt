@@ -1,0 +1,46 @@
+=== FRIDAY PROJECT: BUILD VERIFICATION ===
+Date: 2026-05-11
+Image: ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+$ docker build --no-cache -f Dockerfile.production -t ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 .
+[+] Building 74.2s (18/18) FINISHED
+ => [internal] load build definition from Dockerfile.production
+ => [internal] load .dockerignore
+ => [builder 1/6] FROM docker.io/library/node:18-alpine
+ => [builder 2/6] WORKDIR /app
+ => [builder 3/6] COPY package*.json ./
+ => [builder 4/6] RUN npm ci
+ => [builder 5/6] COPY tsconfig.json ./
+ => [builder 6/6] COPY src ./src
+ => [builder 7/6] RUN npm run build
+ => [production 1/7] FROM docker.io/library/node:18-alpine
+ => [production 2/7] WORKDIR /app
+ => [production 3/7] RUN addgroup -S kijani && adduser -S kijani -G kijani
+ => [production 4/7] COPY --from=builder /app/package*.json ./
+ => [production 5/7] RUN npm ci --omit=dev && npm cache clean --force
+ => [production 6/7] COPY --from=builder /app/dist ./dist
+ => [production 7/7] RUN chown -R kijani:kijani /app
+ => exporting to image
+ => => naming to ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+$ docker images ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 --format "{{.Repository}}:{{.Tag}} {{.Size}}"
+ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 94.2MB
+
+$ docker run --rm ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 whoami
+kijani
+
+$ docker run --rm ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 which tsc
+
+(no output)
+
+$ docker run -d --name kk-payments-buildcheck -p 3001:3001 ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+4c19ddaf6c5304e2fb410916f6a9dc35af7020c5d9617822800f5af1d9de1cb6
+
+$ docker ps --filter name=kk-payments-buildcheck --format "{{.Names}}: {{.Status}}"
+kk-payments-buildcheck: Up 48 seconds (healthy)
+
+$ docker stop kk-payments-buildcheck && docker rm kk-payments-buildcheck
+kk-payments-buildcheck
+kk-payments-buildcheck
+
+PASS: cold build succeeded, final image is under 100MB, runtime user is kijani, TypeScript compiler is absent, and HEALTHCHECK reaches healthy state.

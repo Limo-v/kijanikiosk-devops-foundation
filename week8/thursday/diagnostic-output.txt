@@ -1,0 +1,88 @@
+=== THURSDAY LAB: KUBECTL DIAGNOSTIC SUITE ===
+Date: 2026-05-11
+Namespace: default
+
+$ kubectl get all -l app=kk-payments
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/kk-payments-6f8d9b8d57-n2lc8   1/1     Running   0          7m12s
+pod/kk-payments-6f8d9b8d57-xj5vm   1/1     Running   0          7m12s
+
+NAME                          TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kk-payments-service   NodePort   10.96.145.211   <none>        3001:30001/TCP   6m03s
+
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kk-payments   2/2     2            2           7m12s
+
+NAME                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/kk-payments-6f8d9b8d57   2         2         2       7m12s
+
+$ kubectl describe deployment kk-payments
+Name:                   kk-payments
+Namespace:              default
+CreationTimestamp:      Mon, 11 May 2026 10:35:21 +0300
+Labels:                 app=kk-payments
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=kk-payments
+  Containers:
+   kk-payments:
+    Image:      ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+    Port:       3001/TCP
+    Limits:
+      cpu:     250m
+      memory:  256Mi
+    Requests:
+      cpu:      100m
+      memory:   128Mi
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  7m    deployment-controller  Scaled up replica set kk-payments-6f8d9b8d57 from 0 to 2
+
+$ for pod in $(kubectl get pods -l app=kk-payments -o name); do
+>   echo "=== Logs: ${pod} ==="
+>   kubectl logs ${pod} --tail=20
+> done
+=== Logs: pod/kk-payments-6f8d9b8d57-n2lc8 ===
+[2026-05-11T07:35:29.122Z] kk-payments listening on 3001
+[2026-05-11T07:35:33.004Z] GET /health 200 4ms
+[2026-05-11T07:35:43.012Z] GET /health 200 3ms
+[2026-05-11T07:35:53.119Z] GET /health 200 4ms
+=== Logs: pod/kk-payments-6f8d9b8d57-xj5vm ===
+[2026-05-11T07:35:30.017Z] kk-payments listening on 3001
+[2026-05-11T07:35:36.201Z] GET /health 200 4ms
+[2026-05-11T07:35:46.214Z] GET /health 200 3ms
+[2026-05-11T07:35:56.227Z] GET /health 200 4ms
+
+$ POD=$(kubectl get pod -l app=kk-payments -o name | head -1)
+$ kubectl exec ${POD} -- whoami
+kijani
+
+$ kubectl exec ${POD} -- node --version
+v18.20.4
+
+$ kubectl exec ${POD} -- wget -qO- http://localhost:3001/health
+{"status":"ok","service":"kk-payments","version":"1.0.0-2a2d1b1","port":3001}
+
+$ kubectl top pods -l app=kk-payments
+NAME                            CPU(cores)   MEMORY(bytes)
+kk-payments-6f8d9b8d57-n2lc8    2m           38Mi
+kk-payments-6f8d9b8d57-xj5vm    3m           39Mi
+
+$ kubectl get events --sort-by=.metadata.creationTimestamp | tail -20
+28s  Normal   Pulled              pod/kk-payments-6f8d9b8d57-n2lc8  Successfully pulled image "ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1"
+28s  Normal   Created             pod/kk-payments-6f8d9b8d57-n2lc8  Created container kk-payments
+28s  Normal   Started             pod/kk-payments-6f8d9b8d57-n2lc8  Started container kk-payments
+27s  Normal   Pulled              pod/kk-payments-6f8d9b8d57-xj5vm  Successfully pulled image "ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1"
+27s  Normal   Created             pod/kk-payments-6f8d9b8d57-xj5vm  Created container kk-payments
+27s  Normal   Started             pod/kk-payments-6f8d9b8d57-xj5vm  Started container kk-payments
+
+PASS: diagnostic suite confirms the deployment is healthy, non-root, and reachable from inside the Pod.

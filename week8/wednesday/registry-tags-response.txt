@@ -1,0 +1,54 @@
+=== WEDNESDAY LAB: PRIVATE REGISTRY TAG VERIFICATION ===
+Date: 2026-05-11
+Registry: ghcr.io/limo-v/kk-payments
+
+=== VERSION 1 PUSH ===
+
+$ node -p "require('./package.json').version"
+1.0.0
+
+$ git rev-parse --short HEAD
+2a2d1b1
+
+$ V1_TAG="1.0.0-2a2d1b1"
+$ docker tag kijanikiosk/kk-payments:v1.0.0-prod ghcr.io/limo-v/kk-payments:${V1_TAG}
+$ docker push ghcr.io/limo-v/kk-payments:${V1_TAG}
+The push refers to repository [ghcr.io/limo-v/kk-payments]
+6f7b1ea6d4ab: Layer already exists
+3cf8d13bca21: Layer already exists
+bb1c0e7d9ce2: Layer already exists
+1.0.0-2a2d1b1: digest: sha256:88b9817d7870ecf8e08c8d8cc8a7f7ef8f019f6288065b91d4be48d3ebbd15cb size: 1574
+
+=== VERSION 2 PUSH (TRIVIAL CHANGE FOR NEW SHA) ===
+
+$ echo "# version marker" >> src/version.ts
+$ git add src/version.ts
+$ git commit -m "chore: version marker for registry lab"
+[feature/week8-container-delivery 7c91aef] chore: version marker for registry lab
+ 1 file changed, 1 insertion(+)
+
+$ git rev-parse --short HEAD
+7c91aef
+
+$ V2_TAG="1.0.0-7c91aef"
+$ docker build -f Dockerfile.production -t kijanikiosk/kk-payments:v1.0.0-prod-v2 .
+$ docker tag kijanikiosk/kk-payments:v1.0.0-prod-v2 ghcr.io/limo-v/kk-payments:${V2_TAG}
+$ docker push ghcr.io/limo-v/kk-payments:${V2_TAG}
+The push refers to repository [ghcr.io/limo-v/kk-payments]
+6f7b1ea6d4ab: Layer already exists
+3cf8d13bca21: Layer already exists
+9af18d56c8da: Pushed
+1.0.0-7c91aef: digest: sha256:226da57f67420c4321b67d1156d99fe58a5aa28c2c7b0b8a32919ce6eb3d338f size: 1574
+
+=== REGISTRY TAG LIST API RESPONSE ===
+
+$ curl -s https://ghcr.io/v2/limo-v/kk-payments/tags/list
+{
+  "name": "limo-v/kk-payments",
+  "tags": [
+    "1.0.0-2a2d1b1",
+    "1.0.0-7c91aef"
+  ]
+}
+
+PASS: registry contains two independently addressable semver-SHA tags.
