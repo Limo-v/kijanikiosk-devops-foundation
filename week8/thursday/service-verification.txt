@@ -1,0 +1,21 @@
+=== THURSDAY LAB: SERVICE VERIFICATION ===
+Date: 2026-05-11
+
+$ kubectl get service kk-payments-service
+NAME                  TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kk-payments-service   NodePort   10.96.145.211   <none>        3001:30001/TCP   6m03s
+
+$ kubectl get endpoints kk-payments-service
+NAME                  ENDPOINTS                       AGE
+kk-payments-service   10.244.0.21:3001,10.244.0.22:3001   6m04s
+
+$ NODE_IP=$(minikube ip)
+$ curl http://${NODE_IP}:30001/health
+{"status":"ok","service":"kk-payments","version":"1.0.0-2a2d1b1","port":3001}
+
+$ kubectl run curl-check --rm -it --restart=Never --image=curlimages/curl:8.7.1 -- \
+  curl -s http://kk-payments-service.default.svc.cluster.local:3001/health
+{"status":"ok","service":"kk-payments","version":"1.0.0-2a2d1b1","port":3001}
+pod "curl-check" deleted
+
+PASS: the Service selector matches both Pods, the NodePort responds externally, and the in-cluster DNS name resolves correctly.

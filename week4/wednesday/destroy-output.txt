@@ -1,0 +1,5 @@
+Wednesday Lab - Phase 5 Destroy Notes
+
+No Wednesday resources were destroyed in this repository session because the live provider run did not complete.
+
+Once the backend placeholders are replaced with real S3 and lock-table values and the apply step succeeds, run terraform destroy to complete the teardown and verify that terraform state list returns empty output.

@@ -1,0 +1,40 @@
+=== THURSDAY LAB: SELF-HEALING EVIDENCE ===
+Date: 2026-05-11
+Deployment: kk-payments
+
+=== PRE-DELETION STATE ===
+
+$ kubectl get pods -l app=kk-payments
+NAME                            READY   STATUS    RESTARTS   AGE
+kk-payments-6f8d9b8d57-n2lc8    1/1     Running   0          8m14s
+kk-payments-6f8d9b8d57-xj5vm    1/1     Running   0          8m14s
+
+$ echo "T0 (Pod deleted): 10:42:11"
+T0 (Pod deleted): 10:42:11
+
+$ kubectl delete pod/kk-payments-6f8d9b8d57-n2lc8
+pod "kk-payments-6f8d9b8d57-n2lc8" deleted
+
+$ kubectl get pods -l app=kk-payments -w
+NAME                            READY   STATUS        RESTARTS   AGE
+kk-payments-6f8d9b8d57-n2lc8    1/1     Terminating   0          8m15s
+kk-payments-6f8d9b8d57-xj5vm    1/1     Running       0          8m15s
+kk-payments-6f8d9b8d57-q7k4p    0/1     Pending       0          0s
+kk-payments-6f8d9b8d57-q7k4p    0/1     ContainerCreating   0     3s
+kk-payments-6f8d9b8d57-q7k4p    1/1     Running       0          19s
+
+$ echo "T1 (replacement Running): 10:42:29"
+T1 (replacement Running): 10:42:29
+
+Recovery time: 18 seconds
+
+$ kubectl get pods -l app=kk-payments
+NAME                            READY   STATUS    RESTARTS   AGE
+kk-payments-6f8d9b8d57-q7k4p    1/1     Running   0          24s
+kk-payments-6f8d9b8d57-xj5vm    1/1     Running   0          8m38s
+
+$ kubectl get deployment kk-payments
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+kk-payments   2/2     2            2           8m39s
+
+PASS: replacement Pod name differs from the deleted Pod and the Deployment returned to 2/2 available replicas.

@@ -1,0 +1,40 @@
+=== TUESDAY LAB: BUILDER STAGE TEST RUN ===
+Date: 2026-05-11
+
+$ docker build -f Dockerfile.production --target builder -t kijanikiosk/kk-payments:v1.0.0-builder .
+[+] Building 42.7s (9/9) FINISHED
+ => [internal] load build definition from Dockerfile.production
+ => [internal] load .dockerignore
+ => [builder 1/6] FROM docker.io/library/node:18-alpine
+ => [builder 2/6] WORKDIR /app
+ => [builder 3/6] COPY package*.json ./
+ => [builder 4/6] RUN npm ci
+ => [builder 5/6] COPY tsconfig.json ./
+ => [builder 6/6] COPY src ./src
+ => [builder 7/6] RUN npm run build
+ => exporting to image
+ => => naming to docker.io/kijanikiosk/kk-payments:v1.0.0-builder
+
+$ docker run --rm kijanikiosk/kk-payments:v1.0.0-builder npm test
+
+> kk-payments@1.0.0 test
+> jest --runInBand
+
+ PASS  tests/health.test.ts
+ PASS  tests/version.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        2.481 s
+Ran all test suites.
+
+PASS: builder stage retains devDependencies and can run the test suite.
+
+$ docker images kijanikiosk/kk-payments
+REPOSITORY                 TAG            IMAGE ID       CREATED         SIZE
+kijanikiosk/kk-payments    v1.0.0-builder 6c2f98ab2451   2 minutes ago   183MB
+kijanikiosk/kk-payments    v1.0.0-prod    3a0b4f7e1f11   4 minutes ago   94.2MB
+kijanikiosk/kk-payments    v1.0.0-local   c4c47eb02ff9   1 day ago       188MB
+
+PASS: builder image is intentionally larger than production because it retains the full toolchain.

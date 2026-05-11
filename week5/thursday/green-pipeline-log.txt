@@ -1,0 +1,11 @@
+Pending live Jenkins and Nexus capture.
+
+Paste the full console output for the successful Thursday pipeline run here after executing week5/thursday/Jenkinsfile against the payments repository.
+
+Required evidence in the final log:
+- Docker image pull shows the pinned `node:18-alpine` image.
+- Lint completes before Build starts.
+- Test and Security Audit run in parallel.
+- Credentials appear masked in the console output.
+- The publish step prints the versioned Nexus artifact URL.
+- The post block cleans the workspace.

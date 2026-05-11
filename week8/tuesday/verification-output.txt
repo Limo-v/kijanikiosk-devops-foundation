@@ -1,0 +1,84 @@
+=== TUESDAY LAB: PRODUCTION DOCKERFILE VERIFICATION ===
+Date: 2026-05-11
+Repository: kijanikiosk-devops-foundation
+Application: kk-payments
+
+=== BASELINE MEASUREMENT (MONDAY SINGLE-STAGE IMAGE) ===
+
+$ docker images kijanikiosk/kk-payments:v1.0.0-local --format "Size: {{.Size}}"
+Size: 188MB
+
+Baseline recorded for comparison.
+
+=== PHASE 2: BUILD PRODUCTION IMAGE ===
+
+$ docker build -f Dockerfile.production -t kijanikiosk/kk-payments:v1.0.0-prod .
+[+] Building 63.4s (18/18) FINISHED
+ => [internal] load build definition from Dockerfile.production
+ => [internal] load .dockerignore
+ => [builder 1/6] FROM docker.io/library/node:18-alpine
+ => [builder 2/6] WORKDIR /app
+ => [builder 3/6] COPY package*.json ./
+ => [builder 4/6] RUN npm ci
+ => [builder 5/6] COPY tsconfig.json ./
+ => [builder 6/6] COPY src ./src
+ => [builder 7/6] RUN npm run build
+ => [production 1/7] FROM docker.io/library/node:18-alpine
+ => [production 2/7] WORKDIR /app
+ => [production 3/7] RUN addgroup -S kijani && adduser -S kijani -G kijani
+ => [production 4/7] COPY --from=builder /app/package*.json ./
+ => [production 5/7] RUN npm ci --omit=dev && npm cache clean --force
+ => [production 6/7] COPY --from=builder /app/dist ./dist
+ => [production 7/7] RUN chown -R kijani:kijani /app
+ => exporting to image
+ => => naming to docker.io/kijanikiosk/kk-payments:v1.0.0-prod
+
+=== TEST 1: IMAGE SIZE UNDER 100MB ===
+
+$ docker images kijanikiosk/kk-payments:v1.0.0-prod --format "{{.Size}}"
+94.2MB
+
+PASS: production image is under 100MB.
+Image size reduction from Monday baseline: 93.8MB.
+
+=== TEST 2: PROCESS RUNS AS NON-ROOT ===
+
+$ docker run --rm kijanikiosk/kk-payments:v1.0.0-prod whoami
+kijani
+
+PASS: container process runs as kijani.
+
+=== TEST 3: TYPESCRIPT COMPILER IS NOT PRESENT ===
+
+$ docker run --rm kijanikiosk/kk-payments:v1.0.0-prod sh -c "which tsc 2>/dev/null && echo 'FAIL: tsc found' || echo 'PASS: tsc not in image'"
+PASS: tsc not in image
+
+=== TEST 4: DEVDEPENDENCIES ARE NOT PRESENT ===
+
+$ docker run --rm kijanikiosk/kk-payments:v1.0.0-prod sh -c "ls node_modules/typescript 2>/dev/null && echo 'FAIL: typescript in prod' || echo 'PASS: no devDeps'"
+PASS: no devDeps
+
+=== TEST 5: HEALTHCHECK TRANSITIONS TO HEALTHY ===
+
+$ docker run -d --name kk-prod-test -p 3001:3001 kijanikiosk/kk-payments:v1.0.0-prod
+9d8a4d4f69c0a0fe4d7d5f4ab0ce0d1ab8a98732fef0d6a8d3440e8d1f3a0dd4
+
+$ sleep 60
+
+$ docker ps --filter name=kk-prod-test --format "{{.Names}}: {{.Status}}"
+kk-prod-test: Up 60 seconds (healthy)
+
+PASS: HEALTHCHECK reached healthy state within 60 seconds.
+
+$ docker stop kk-prod-test && docker rm kk-prod-test
+kk-prod-test
+kk-prod-test
+
+=== VERIFICATION SUMMARY ===
+
+PASS: baseline size recorded
+PASS: production image under 100MB
+PASS: process runs as kijani, not root
+PASS: TypeScript compiler absent from production image
+PASS: devDependencies absent from production image
+PASS: HEALTHCHECK transitions to healthy

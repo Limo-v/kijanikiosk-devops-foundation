@@ -1,0 +1,47 @@
+=== WEDNESDAY LAB: PRIVATE REGISTRY PULL VERIFICATION ===
+Date: 2026-05-11
+Image: ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+$ docker rmi ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1 2>/dev/null || true
+Untagged: ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+$ kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kk-payments-pulltest
+spec:
+  imagePullSecrets:
+  - name: kijani-registry-credentials
+  containers:
+  - name: kk-payments
+    image: ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+    ports:
+    - containerPort: 3001
+  restartPolicy: Never
+EOF
+pod/kk-payments-pulltest created
+
+$ kubectl get pod kk-payments-pulltest -w
+NAME                   READY   STATUS              RESTARTS   AGE
+kk-payments-pulltest   0/1     Pending             0          0s
+kk-payments-pulltest   0/1     ContainerCreating   0          3s
+kk-payments-pulltest   1/1     Running             0          15s
+
+$ kubectl describe pod kk-payments-pulltest | grep -A6 "Events:"
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  16s   default-scheduler  Successfully assigned default/kk-payments-pulltest to minikube
+  Normal  Pulling    15s   kubelet            Pulling image "ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1"
+  Normal  Pulled     9s    kubelet            Successfully pulled image "ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1" in 5.842s
+  Normal  Created    9s    kubelet            Created container kk-payments
+  Normal  Started    9s    kubelet            Started container kk-payments
+
+$ kubectl exec kk-payments-pulltest -- whoami
+kijani
+
+$ kubectl delete pod kk-payments-pulltest
+pod "kk-payments-pulltest" deleted
+
+PASS: Kubernetes pulled the image from the private registry using the ImagePullSecret and the process runs as kijani.

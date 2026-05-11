@@ -1,0 +1,19 @@
+=== FRIDAY PROJECT: SERVICE OUTPUT ===
+Date: 2026-05-11
+
+$ kubectl apply -f kk-payments-service.yaml
+service/kk-payments-service created
+
+$ kubectl get endpoints kk-payments-service
+NAME                  ENDPOINTS                       AGE
+kk-payments-service   10.244.0.31:3001,10.244.0.32:3001   64s
+
+$ curl http://$(minikube ip):30001/health
+{"status":"ok","service":"kk-payments","version":"1.0.0-2a2d1b1","port":3001}
+
+$ kubectl run curl-check --rm -it --restart=Never --image=curlimages/curl:8.7.1 -- \
+  curl -s http://kk-payments-service.default.svc.cluster.local:3001/health
+{"status":"ok","service":"kk-payments","version":"1.0.0-2a2d1b1","port":3001}
+pod "curl-check" deleted
+
+PASS: Service endpoints list both Pod IPs and both external and in-cluster requests return the deployed version.

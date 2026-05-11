@@ -1,0 +1,33 @@
+=== FRIDAY PROJECT: REGISTRY PUSH AND PULL VERIFICATION ===
+Date: 2026-05-11
+Registry: ghcr.io/limo-v/kk-payments
+
+$ PKG_VERSION=$(node -p "require('./package.json').version")
+$ echo ${PKG_VERSION}
+1.0.0
+
+$ GIT_SHORT=$(git rev-parse --short HEAD)
+$ echo ${GIT_SHORT}
+2a2d1b1
+
+$ IMAGE_TAG="${PKG_VERSION}-${GIT_SHORT}"
+$ echo ${IMAGE_TAG}
+1.0.0-2a2d1b1
+
+$ docker push ghcr.io/limo-v/kk-payments:${IMAGE_TAG}
+The push refers to repository [ghcr.io/limo-v/kk-payments]
+6f7b1ea6d4ab: Layer already exists
+3cf8d13bca21: Layer already exists
+bb1c0e7d9ce2: Layer already exists
+1.0.0-2a2d1b1: digest: sha256:88b9817d7870ecf8e08c8d8cc8a7f7ef8f019f6288065b91d4be48d3ebbd15cb size: 1574
+
+$ docker rmi ghcr.io/limo-v/kk-payments:${IMAGE_TAG}
+Untagged: ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+$ docker pull ghcr.io/limo-v/kk-payments:${IMAGE_TAG}
+1.0.0-2a2d1b1: Pulling from limo-v/kk-payments
+Digest: sha256:88b9817d7870ecf8e08c8d8cc8a7f7ef8f019f6288065b91d4be48d3ebbd15cb
+Status: Downloaded newer image for ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+ghcr.io/limo-v/kk-payments:1.0.0-2a2d1b1
+
+PASS: tag was computed from package version plus current short SHA, pushed successfully, removed locally, and pulled back fresh from the registry.
